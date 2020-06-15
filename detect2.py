@@ -1,12 +1,12 @@
 import cv2
 import numpy as np
 import os 
-from openpyxl import Workbook,load_workbook
+from openpyxl import Workbook
 import datetime
 
-wb=load_workbook('attendence.xlsx')
+wb=Workbook()
 ws=wb.active
-#ws.title='at'
+ws.title='at'
 recognizer = cv2.face.LBPHFaceRecognizer_create()
 recognizer.read('trainer/trainer.yml')
 cascadePath = "haarcascade_frontalface_alt.xml"
@@ -18,7 +18,7 @@ font = cv2.FONT_HERSHEY_SIMPLEX
 id = 0
 
 # names related to ids: example ==> Marcelo: id=1,  etc
-names = ['', 'kc', 'sk', 'nitish', 'pranav','adarshreddy'] 
+names = ['', 'kc', 'sk', 'nitish', 'pranav','adarshreddy','nishanth','sravya'] 
 
 # Initialize and start realtime video capture
 cam = cv2.VideoCapture(0)
@@ -52,7 +52,7 @@ while True:
             confidence = "  {0}%".format(round(100 - confidence))
             if id not in l:
                 ws['A'+str(id+1)]=im
-                ws['C'+str(id+1)]=str(datetime.datetime.now())
+                ws['B'+str(id+1)]=str(datetime.datetime.now())
         else:
             id = "unknown"
             confidence = "  {0}%".format(round(100 - confidence))
