@@ -1,36 +1,35 @@
-import numpy as np
-from PIL import Image 
-import os
 import cv2
-import pickle
-face_cascade=cv2.CascadeClassifier('haarcascade_frontalface_alt.xml')
-base_dir=os.path.dirname(os.path.abspath(__file__))
-img_dir=os.path.join(base_dir,"dataset2")
-rec=cv2.face.LBPHFaceRecognizer_create()
-ylabels=[]
-xtrain=[]
-curr_id=0
-label_ids={}
-for root,dirs,files in os.walk(img_dir):
-    for file in files:
-        if file.endswith("PNG") or file.endswith("JPG"):
-            path=os.path.join(root,file)
-            label=os.path.basename(root).replace(" ","-")
-            #print(label,path)
-            if not label in label_ids:
-                label_ids[label]=curr_id
-                curr_id+=1
-            id_=label_ids[label]
-            #print(label_ids)    
-            pil_img=Image.open(path).convert("L")
-            img_arr=np.array(pil_img,"uint8")
-            #print(img_arr)
-            faces=face_cascade.detectMultiScale(img_arr,scaleFactor=1.3,minNeighbors=5)
-            for (x,y,w,h) in faces:
-                roi=img_arr[y:y+h ,x:x+w]
-                xtrain.append(roi)
-                ylabels.append(id_)
-with open("labels.pickle",'wb') as f:
-    pickle.dump(label_ids,f)  
-rec.train(xtrain,np.array(ylabels))
-rec.save("trainner.yml") 
+import numpy as np
+from PIL import Image
+import os
+
+# Path for face image database
+path = 'dataset2'
+
+recognizer = cv2.face.LBPHFaceRecognizer_create()
+detector = cv2.CascadeClassifier("haarcascade_frontalface_alt.xml")
+
+# function to get the images and label data
+def getImagesAndLabels(path):
+    imagePaths = [os.path.join(path,f) for f in os.listdir(path)]     
+    faceSamples=[]
+    ids = []
+    for imagePath in imagePaths:
+        PIL_img = Image.open(imagePath).convert('L') 
+        img_numpy = np.array(PIL_img,'uint8')
+        id = int(os.path.split(imagePath)[-1].split(".")[1])
+        faces = detector.detectMultiScale(img_numpy)
+        for (x,y,w,h) in faces:
+            faceSamples.append(img_numpy[y:y+h,x:x+w])
+            ids.append(id)
+    return faceSamples,ids
+
+print ("\n [INFO] Training faces. It will take a few seconds. Wait ...")
+faces,ids = getImagesAndLabels(path)
+recognizer.train(faces, np.array(ids))
+
+# Save the model into trainer/trainer.yml
+recognizer.write('trainer/trainer.yml') # recognizer.save() worked on Mac, but not on Pi
+
+# Print the numer of faces trained and end program
+print("\n [INFO] {0} faces trained. Exiting Program".format(len(np.unique(ids))))
