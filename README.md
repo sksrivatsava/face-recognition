@@ -1,5 +1,8 @@
 # face-recognition
 
+it is the open cv project for face recognition .
+
+
 there are three files 
 1.face.py
 2.detect2.py
